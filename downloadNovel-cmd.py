@@ -4,9 +4,8 @@
 Author: skillf
 Date: 2021-04-27 17:15:59
 LastEditTime: 2021-04-29 15:06:20
-FilePath: \NovelDownloadTool\downloadNovel-cmd.py
+FilePath: \\NovelDownloadTool\\downloadNovel-cmd.py
 '''
-
 
 import requests
 from bs4 import BeautifulSoup
