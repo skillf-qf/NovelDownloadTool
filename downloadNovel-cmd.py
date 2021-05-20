@@ -4,12 +4,10 @@
 Author: skillf
 Date: 2021-04-27 17:15:59
 LastEditTime: 2021-04-29 15:06:20
-FilePath: \小说下载\downloadNovel.py
+FilePath: \NovelDownloadTool\downloadNovel-cmd.py
 '''
 
 
-#!/usr/bin/env python
-# coding=utf-8
 import requests
 from bs4 import BeautifulSoup
 import time
@@ -17,8 +15,9 @@ import os.path
 import shutil
 import sys
 
+pathSeparator = '\\'
 currentRootDir = os.path.dirname(sys.argv[0])
-downloadPath = currentRootDir + '\\Downloads'
+downloadPath = currentRootDir + pathSeparator + 'Downloads'
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) \
@@ -113,7 +112,7 @@ def timeTransfer(t):
 
 def saveContent(novel_name,novel_author,content_list,save_status):
     # content_list: 0: section_name, [1:] : content
-    savePath = downloadPath+ '\\' + novel_name
+    savePath = downloadPath+ pathSeparator + novel_name
     if not os.path.exists(downloadPath):
         os.mkdir(downloadPath)
 
@@ -125,16 +124,16 @@ def saveContent(novel_name,novel_author,content_list,save_status):
         os.mkdir(savePath)
     
     #print('正在下载：',content_list[0])
-    file_name = savePath + '\\' + novel_name + '-' + 'by' + novel_author + '.txt'
+    file_name = savePath + pathSeparator + novel_name + '-' + 'by' + novel_author + '.txt'
     for line in content_list:
         with open(file_name, 'a+') as f:
             f.write(line)
 
 def logFile(novel_name,wrong_location,error_text):
    
-    savePath = downloadPath+novel_name
+    savePath = downloadPath + pathSeparator + novel_name
     #print('正在下载：',content_list[0])
-    log_name = savePath + '\\' + novel_name + '.log'
+    log_name = savePath + pathSeparator + novel_name + '.log'
     gap = '=========================================='
     time_format = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
