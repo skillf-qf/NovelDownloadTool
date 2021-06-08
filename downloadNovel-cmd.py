@@ -27,7 +27,7 @@ headers = {
 def getUrl(url):
     # timeout(3,7)表示的连接时间是3秒，响应时间是7秒。
     #req = requests.get(url,headers=headers)
-    req = requests.get(url,headers=headers,timeout=(3,7))
+    req = requests.get(url,headers=headers,timeout=10)
     #req.encoding = 'utf-8'
     req.encoding = 'gbk'
     html=req.text
@@ -44,9 +44,12 @@ def getNovelInfo(url):
     # 当显示到DOS窗口上的时候，转换为GBK编码的字符串，
     # 但是\xa0这个Unicode字符没有对应的 GBK 编码的字符串，所以出现错误。
     # 因此必须转换成常规字符串，这里信息并不重要（\xa0在'：' 之前，而这里只保留 '：' 之后的信息）所以可以用' '空格替换，其他时候看情况处理。
-    for info in infos:
+    for info in infos[:2]:
         infoList.append(info.text.replace(u'\xa0', u' ').split('：')[1])
-
+    for info in infos[2:]:
+        infoList.append(info.text.replace(u'\xa0', u' ')[5:])
+    #print(infoList)
+    #exit()
     sectionList = bs.findAll(name='div',attrs={"id":"list"})[0].find_all('dd')
     i = 0
     sectionInfo = {}
@@ -252,7 +255,7 @@ def inputHandle():
 
 
 if __name__ == '__main__':
-    print("三七中文网 小说下载 downloadNovel-V1.2 程序已启动 (′▽`〃)\n")
+    print("三七中文网 小说下载 downloadNovel-V1.2.1 程序已启动 (′▽`〃)\n")
 
     # 三七中文网 小说
     url = inputHandle()
@@ -264,29 +267,33 @@ if __name__ == '__main__':
     currentCount = 0
     start = time.perf_counter()
     for section,link in novelSections.items():
-        #print(section)
+        retryCount = 1
         currentCount = currentCount + 1
-        try:
-            content = singleSection(link,section)
-        except IOError as e:
-            print("Error: 网页请求失败：",e)
-            print("小说下载失败：",section,link)
-            logFile(novelName,repr(e),"小说下载失败：{} {}".format(section,link))
+        content = []
+        while retryCount < 4:
             try:
-                print("Retry: 正在尝试重新下载 。。。",section)
+                if retryCount > 1:
+                    print("Retry: 正在尝试第{}次重新下载 。。。{}".format(retryCount,section))
                 content = singleSection(link,section)
-                print("Retry: 重新下载成功 ",section)
-                logFile(novelName,repr(e),"重新下载成功 ：{} {}".format(section,link))
+                if retryCount > 1:
+                    logFile(novelName,'Done.',"Retry: 第{}次重新下载成功 ：{} {}".format(retryCount,section,link))
+                break
             except IOError as e:
-                print("Error: 重试失败：",e)
-                print("Error: 重试失败章节：",section,link)
-                logFile(novelName,repr(e),"重新下载失败：{} {}".format(section,link))
+                print("Error: 网页请求失败：",e)
+                print("第{}次小说下载失败：{} {}".format(retryCount,section,link))
+                if retryCount > 1:
+                    logFile(novelName,repr(e),"第{}次重新下载失败：{} {}".format(retryCount,section,link))
+                else:
+                    logFile(novelName,repr(e),"小说下载失败：{} {}".format(section,link))
+                retryCount = retryCount + 1
+                time.sleep(1)
 
-        saveContent(novelName,novelAuthor,content,saveStatus)
-        progressBar(section,currentCount,len(novelSections),start)
-        saveStatus = 1
+        if content:
+            saveContent(novelName,novelAuthor,content,saveStatus)
+            progressBar(section,currentCount,len(novelSections),start)
+            saveStatus = 1
         #print(section,':',link)
-        time.sleep(0.3)
+        #time.sleep(0.3)
         #break
     print("\n\n下载完成！\n\n")
     os.system('pause')
